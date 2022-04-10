@@ -3,7 +3,7 @@
 .\" ``makeman.pl'' is part of the ``MakeMan'' project.
 .\" For more information, please see http://mama.sourceforge.net
 .\"
-.TH 2VCARD 1 "September 23rd, 2001" "2vcard" "Addressbook conversion tools" 
+.TH 2VCARD 1 "March 08th, 2003" "2vcard" "Addressbook conversion tools" 
 
 .SH NAME
 2vcard \- convert addressbooks to VCARD format
@@ -19,9 +19,9 @@
 \fB2vcard\fR is a little perl script to convert an
 addressbook to the popular VCARD file format.
 Currently,
-\fB2vcard\fR can convert
-\fBmutt\fR's and \fBmh\fR's alias as well as
-\fBpine\fR's, \fBabook\fR's and juno's addressbook format.
+\fB2vcard\fR can convert addressbooks and alias files from the following
+formats: \fBabook\fR, \fBeudora\fR, \fBjuno\fR, \fBldif\fR,
+\fBmutt\fR, \fBmh\fR and \fBpine\fR.
 .PP
 The VCARD format is used by \fBgnomecard\fR, for
 example, which, in turn is used by the \fBbalsa\fR
@@ -65,9 +65,8 @@ Show version information and exit.
 .\" Begin List
 .TP
 In a pipe:
-\fBcat\fR
-\fI~/.addressbook\fR |
-\fB2vcard \-p\fR
+tr \fI'^M'\fR \fI'\\n'\fR < EudoraNicknames |
+\fB2vcard \-f\fR \fIeudora\fR > out
 .TP
 Alone:
 \fB2vcard \-i\fR
@@ -77,7 +76,7 @@ Alone:
 
 .SH "VERSION"
 .PP
-0.3
+0.5
 
 .SH "BUGS"
 .PP

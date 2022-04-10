@@ -1,12 +1,14 @@
 #!/usr/bin/perl -w
 use strict;
+# Hint from http://www.seligma.com/download/palm-ldif2csv
+use MIME::Base64;
+use MIME::QuotedPrint;
 
 ###############################################################################
 #
 # $Author: Jan Schaumann <jschauma@netmeister.org> $
-# $Id: 2vcard v 0.4 2002-11-27 17:48:44 Jan Schaumann Exp $
 #
-# Copyright (c) 2001,2002 Jan Schaumann <jschauma@netmeister.org>
+# Copyright (c) 2001,2002,2003 Jan Schaumann <jschauma@netmeister.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,8 +39,10 @@ use strict;
 use Getopt::Std;
 
 my $NAME = "2vcard";
-my $VERSION = "0.4";
-my %SUPPORTED = ("abook" => 0, "mh" => 0, "mutt" => 1, "pine" => 0, "juno" => 0);
+my $VERSION = "0.5";
+my %SUPPORTED = ("abook" => 0, "mh" => 0, "mutt" => 1,
+		 "pine" => 0, "juno" => 0, "ldif" => 0,
+		 "eudora" => 0);
 
 init();
 main();
@@ -57,64 +61,56 @@ exit 0;
 ###
 sub init
 {
-		my %Options;
-		my $ok = getopts('Ff:hi:o:v', \%Options);
-		if (!$ok)
-		{
-				my $i;
-				my @values = keys(%Options);
-				foreach $i (@values)
-				{
-						if (!$Options{$i})
-						{
-								print STDERR "Option '$i' requires an argument.\n";
-								print STDERR "Try $NAME -h for details.\n";
-								exit(1);
-						}
-				}
-		}
-
-		open (READ, "<&STDIN") ||
-			die "Can't read from STDIN-- WTF??\n";
-
-		open (WRITE, ">&STDOUT") ||
-			die "Can't write to STDOUT -- WTF??\n";
-
-		if ($Options{'f'})
-		{
-				setFormat("$Options{'f'}");
-		}
-		if ($Options{'F'})
-		{
-				formats();
-				exit 0;
-		}
-		if ($Options{'h'})
-		{
-				usage();
-				exit 0;
-		}
-		if ($Options{'v'})
-		{
-				print "$NAME Version $VERSION\n";
-				exit 0;
-		}
-		if ($Options{'i'})
-		{
-				open(READ, "$Options{'i'}") ||
-						die "Can't open \"$Options{'i'}\" for reading!\n";
-		}
-		if ($Options{'o'})
-		{
-				open(WRITE, ">$Options{'o'}") ||
-						die "Can't open \"$Options{'o'}\" for writing!\n";
-		}
-
-		if ($#ARGV > -1)
-		{
-				usage();
+	my %Options;
+	my $ok = getopts('Ff:hi:o:v', \%Options);
+	if (!$ok) {
+		my $i;
+		my @values = keys(%Options);
+		foreach $i (@values) {
+			if (!$Options{$i}) {
+				print STDERR "Option '$i' requires an argument.\n";
+				print STDERR "Try $NAME -h for details.\n";
 				exit(1);
+			}
 		}
+		usage();
+		exit(1);
+	}
+
+	open (READ, "<&STDIN") ||
+		die "Can't read from STDIN-- WTF??\n";
+
+	open (WRITE, ">&STDOUT") ||
+		die "Can't write to STDOUT -- WTF??\n";
+
+	if ($Options{'f'}) {
+		setFormat("$Options{'f'}");
+	}
+	if ($Options{'F'}) {
+		formats();
+		exit 0;
+	}
+	if ($Options{'h'}) {
+		usage();
+		exit 0;
+	}
+	if ($Options{'v'}) {
+		print "$NAME Version $VERSION\n";
+		exit 0;
+	}
+	if ($Options{'i'}) {
+		open(READ, "$Options{'i'}") ||
+			die "Can't open \"$Options{'i'}\" for reading!\n";
+	}
+	if ($Options{'o'}) {
+		open(WRITE, ">$Options{'o'}") ||
+			die "Can't open \"$Options{'o'}\" for writing!\n";
+	}
+
+	if ($#ARGV > -1) {
+		usage();
+		exit(1);
+	}
 }
 
 ###
@@ -122,23 +118,19 @@ sub init
 ###
 sub setFormat
 {
-		my ($which) = @_;
-		my $key;
-		foreach $key (keys %SUPPORTED)
-		{
-				$SUPPORTED{"$key"} = 0;
-		}
-		if ($which =~ m/(abook)|(mh)|(pine)|(mutt)|(juno)/)
-		{
-				$SUPPORTED{"$which"} = 1;
-		}
-		else
-		{
-				print STDERR "$NAME: ERROR:\n";
-				print STDERR "Format \"$which\" not supported.\n";
-				print STDERR "Try \"-F\" and/or \"-h\".\n";
-				exit(1);
-		}
+	my ($which) = @_;
+	my $key;
+	foreach $key (keys %SUPPORTED) {
+		$SUPPORTED{"$key"} = 0;
+	}
+	if ($which =~ m/(abook)|(eudora)|(juno)|(ldif)|(mh)|(mutt)|(pine)/) {
+		$SUPPORTED{"$which"} = 1;
+	} else {
+		print STDERR "$NAME: ERROR:\n";
+		print STDERR "Format \"$which\" not supported.\n";
+		print STDERR "Try \"-F\" and/or \"-h\".\n";
+		exit(1);
+	}
 }
 
 ###
@@ -146,11 +138,13 @@ sub setFormat
 ###
 sub main
 {
-		parseMutt() if ($SUPPORTED{"mutt"});
-		parsePine() if ($SUPPORTED{"pine"});
-		parseMH() if ($SUPPORTED{"mh"});
-		parseAbook() if ($SUPPORTED{"abook"});
-		parseJuno() if ($SUPPORTED{"juno"});
+	parseAbook() if ($SUPPORTED{"abook"});
+	parseEudora() if ($SUPPORTED{"eudora"});
+	parseJuno() if ($SUPPORTED{"juno"});
+	parseLdif() if ($SUPPORTED{"ldif"});
+	parseMH() if ($SUPPORTED{"mh"});
+	parseMutt() if ($SUPPORTED{"mutt"});
+	parsePine() if ($SUPPORTED{"pine"});
 }
 
 ###
@@ -158,8 +152,127 @@ sub main
 ###
 sub done
 {
-		close WRITE;
-		close READ;
+	close WRITE;
+	close READ;
+}
+
+###
+# Outputs one info line
+###
+sub Oneline
+{
+	if ($_[0]) {
+		print WRITE "$_[1]";
+		if ($_[2]) {print WRITE ";quoted-printable";}
+		print WRITE ":$_[0]\n";
+	}
+}
+
+###
+# parse Eudora alias file
+###
+sub parseEudora
+{
+	my %eudoras = ();
+	while (<READ>) {
+
+		#s//\n/g;
+
+		# Format is:
+		# alias nick email@address
+		# alias nick2 email@address
+		# ...
+		# note nick <field1:value><field2:multi^Cline^Cvalue>...<fieldn:value>unknown^Cfields
+		
+		# nicks first
+		if (m/^alias (.*) (.*@.*)$/) {
+			my $nick = $1;
+			my $email = $2;
+
+			$eudoras{"$nick"} = ();
+			$eudoras{"$nick"}{"email"} = $email;
+		}
+		elsif (m/^alias (.*) ,$/) {
+			my $nick = $1;
+			$eudoras{"$nick"} = ();
+		}
+
+		# all else later
+		if (m/note (.*) <(.*)$/) {
+			my $nick = $1;
+			my $info = $2;
+
+			if ($info =~ m/.*name:([^>]*)>[<\$]/) {
+				$eudoras{"$nick"}{"name"} = $1;
+			}
+
+			if ($info =~ m/.*phone:([^>]*)>.*/) {
+				$eudoras{"$nick"}{"phone"} = $1;
+			}
+
+			if ($info =~ m/.*address:([^>]*)>.*/) {
+				my $add = $1;
+				$add =~ s//;/g;
+				$eudoras{"$nick"}{"address"} = $add;
+			}
+			
+			if ($info =~ m/.*fax:([^>]*)>.*/) {
+				$eudoras{"$nick"}{"fax"} = $1;
+				print $1;
+			}
+
+			if ($info =~ m/>([^<>]*)$/) {
+				$eudoras{"$nick"}{"note"} = $1;
+			}
+		}
+	}
+
+	my $key;
+	foreach $key (keys %eudoras) {
+		print WRITE "BEGIN:VCARD\n";
+		print WRITE "NICKNAME:$key\n";
+
+		my $fn = $eudoras{"$key"}{"name"};
+		if ($fn) {
+			my @name = split / /, $fn, 2;
+			my $x;
+
+			print WRITE "FN:$fn\n";
+			print WRITE "N:";
+			foreach $x (reverse @name) {
+				print WRITE "$x;";
+			}
+			print WRITE "\n";
+		}
+
+		my $email =  $eudoras{"$key"}{"email"};
+		if ($email) {
+			print WRITE "EMAIL;INTERNET:$email\n";
+		}
+
+		my $phone = $eudoras{"$key"}{"phone"};
+		if ($phone) {
+			print WRITE "TEL;HOME:$phone\n";
+		}
+
+		my $fax = $eudoras{"$key"}{"fax"};
+		if ($fax) {
+			print WRITE "TEL;FAX:$fax\n";
+		}
+
+		my $addr = $eudoras{"$key"}{"address"};
+		if ($addr) {
+			print WRITE "ADR;HOME:Default;;$addr\n";
+		}
+
+		my $note = $eudoras{"$key"}{"note"};
+		if ($note) {
+			$note =~ s//;/g;
+			print WRITE "NOTE:$note\n";
+		}
+
+		print WRITE "END:VCARD\n\n";
+	}
 }
 
 ###
@@ -167,77 +280,61 @@ sub done
 ###
 sub parseMutt
 {
-		while (<READ>)
-		{
-				# alias nick email@address (full name)
-				if (m/^alias (.*) (.*) \((.*)\)$/)
+	while (<READ>) {
+		# alias nick email@address (full name)
+		if (m/^alias (.*) (.*) \((.*)\)$/) {
+			my @name = split / /, $3, 2;
+			my $x;
+
+			print WRITE "BEGIN:VCARD\n";
+			print WRITE "FN:$3\n";
+			print WRITE "N:";
+			foreach $x (reverse @name) {
+				print WRITE "$x;";
+			}
+			print WRITE "\n";
+
+			$x = $2;
+			if ($x =~ m/(.*,.*)/) {
+				my @emails = split /,/, $1;
+				foreach $x (@emails)
 				{
-						my @name = split / /, $3, 2;
-						my $x;
-						
-						print WRITE "BEGIN:VCARD\n";
-						print WRITE "FN:$3\n";
-						print WRITE "N:";
-						foreach $x (reverse @name)
-						{
-								print WRITE "$x;";
-						}
-						print WRITE "\n";
-
-						$x = $2;
-						if ($x =~ m/(.*,.*)/)
-						{
-								my @emails = split /,/, $1;
-								foreach $x (@emails)
-								{
-										print WRITE "EMAIL;INTERNET:$x\n";
-								}
-						}
-						else
-						{
-								print WRITE "EMAIL;INTERNET:$x\n";
-						}
-						print WRITE "END:VCARD\n\n";
+					print WRITE "EMAIL;INTERNET:$x\n";
 				}
-				# alias nick full name <email@address>
-				elsif (m/^alias ([^\s]*) (.*) (<.*>)/)
-				{
-						my @name = split / /, $2, 2;
-						my $x;
+			} else {
+				print WRITE "EMAIL;INTERNET:$x\n";
+			}
+			print WRITE "END:VCARD\n\n";
+		} elsif (m/^alias ([^\s]*) (.*) (<.*>)/) {
+		# alias nick full name <email@address>
+			my @name = split / /, $2, 2;
+			my $x;
 
-						print WRITE "BEGIN:VCARD\n";
-						print WRITE "FN:$2\n";
-						print WRITE "N:";
-						foreach $x (reverse @name)
-						{
-								print WRITE "$x;";
-						}
-						print WRITE "\n";
+			print WRITE "BEGIN:VCARD\n";
+			print WRITE "FN:$2\n";
+			print WRITE "N:";
+			foreach $x (reverse @name) {
+				print WRITE "$x;";
+			}
+			print WRITE "\n";
 
-						$x = $3;
-						if ($x =~ m/(.*,.*)/)
-						{
-								my @emails = split /,/, $1;
-								foreach $x (@emails)
-								{
-										$x =~ s/[<>]//g;
-										print WRITE "EMAIL;INTERNET:$x\n";
-								}
-						}
-						else
-						{
-								$x =~ s/[<>]//g;
-								print WRITE "EMAIL;INTERNET:$x\n";
-						}
-						print WRITE "END:VCARD\n\n";
-
+			$x = $3;
+			if ($x =~ m/(.*,.*)/) {
+				my @emails = split /,/, $1;
+				foreach $x (@emails) {
+					$x =~ s/[<>]//g;
+					print WRITE "EMAIL;INTERNET:$x\n";
 				}
-				else
-				{
-						print STDERR "Skipping ill-formatted line:\n";
-						print STDERR "   $_\n";
-				}
+			} else {
+				$x =~ s/[<>]//g;
+				print WRITE "EMAIL;INTERNET:$x\n";
+			}
+			print WRITE "END:VCARD\n\n";
+		} else {
+			print STDERR "Skipping ill-formatted line:\n";
+			print STDERR "   $_\n";
 		}
+	}
 }
 
 ###
@@ -245,39 +342,31 @@ sub parseMutt
 ###
 sub parseMH
 {
-		while (<READ>)
-		{
-				# alias: email@address, email@address
-				if (m/^(.*): (.*)/)
-				{
-						my $x;
-						
-						print WRITE "BEGIN:VCARD\n";
-						print WRITE "FN:$1\n";
-						print WRITE "N:$1\n";
+	while (<READ>) {
+		# alias: email@address, email@address
+		if (m/^(.*): (.*)/) {
+			my $x;
 
-						$x = $2;
-						if ($x =~ m/(.*,.*)/)
-						{
-								my @emails = split /,/, $1;
-								foreach $x (@emails)
-								{
-										$x =~ s/\s//g;
-										print WRITE "EMAIL;INTERNET:$x\n";
-								}
-						}
-						else
-						{
-								print WRITE "EMAIL;INTERNET:$x\n";
-						}
-						print WRITE "END:VCARD\n\n";
+			print WRITE "BEGIN:VCARD\n";
+			print WRITE "FN:$1\n";
+			print WRITE "N:$1\n";
+
+			$x = $2;
+			if ($x =~ m/(.*,.*)/) {
+				my @emails = split /,/, $1;
+				foreach $x (@emails) {
+					$x =~ s/\s//g;
+					print WRITE "EMAIL;INTERNET:$x\n";
 				}
-				else
-				{
-						print STDERR "Skipping ill-formatted line:\n";
-						print STDERR "   $_\n";
-				}
+			} else {
+				print WRITE "EMAIL;INTERNET:$x\n";
+			}
+			print WRITE "END:VCARD\n\n";
+		} else {
+			print STDERR "Skipping ill-formatted line:\n";
+			print STDERR "   $_\n";
 		}
+	}
 }
 
 ###
@@ -285,45 +374,36 @@ sub parseMH
 ###
 sub parsePine
 {
-		while (<READ>)
-		{
-				# nick\tFull Name\temail@address
-				# nick\tFull Name\t(email@address,email@address)
-				if (m/^(.*)\t(.*)\t(.*\@.*)$/)
-				{
-						my @name = split / /, $2, 2;
-						my $x;
-						
-						print WRITE "BEGIN:VCARD\n";
-						print WRITE "FN:$2\n";
-						print WRITE "N:";
-						foreach $x (reverse @name)
-						{
-								print WRITE "$x;";
-						}
-						print WRITE "\n";
+	while (<READ>) {
+		# nick\tFull Name\temail@address
+		# nick\tFull Name\t(email@address,email@address)
+		if (m/^(.*)\t(.*)\t(.*\@.*)$/) {
+			my @name = split / /, $2, 2;
+			my $x;
 
-						$x = $3;
-						if ($x =~ m/\((.*)\)/)
-						{
-								my @emails = split /,/, $1;
-								foreach $x (@emails)
-								{
-										print WRITE "EMAIL;INTERNET:$x\n";
-								}
-						}
-						else
-						{
-								print WRITE "EMAIL;INTERNET:$3\n";
-						}
-						print WRITE "END:VCARD\n\n";
+			print WRITE "BEGIN:VCARD\n";
+			print WRITE "FN:$2\n";
+			print WRITE "N:";
+			foreach $x (reverse @name) {
+				print WRITE "$x;";
+			}
+			print WRITE "\n";
+
+			$x = $3;
+			if ($x =~ m/\((.*)\)/) {
+				my @emails = split /,/, $1;
+				foreach $x (@emails) {
+					print WRITE "EMAIL;INTERNET:$x\n";
 				}
-				else
-				{
-						print STDERR "Skipping ill-formatted line:\n";
-						print STDERR "   $_\n";
-				}
+			} else {
+				print WRITE "EMAIL;INTERNET:$3\n";
+			}
+			print WRITE "END:VCARD\n\n";
+		} else {
+			print STDERR "Skipping ill-formatted line:\n";
+			print STDERR "   $_\n";
 		}
+	}
 }
 
 ###
@@ -331,116 +411,98 @@ sub parsePine
 ###
 sub parseAbook
 {
-		my $count = 0;
-		my %info;
+	my $count = 0;
+	my %info;
 LOOP:
-		while (<READ>)
-		{
-				# [num]
-				# name=Gorden Koch
-				# email=foo@bar.com,foo@barbar.com
-				# address=Street
-				# city=City
-				# state=State
-				# zip=123123
-				# country=Germany
-				# phone=0271/8902725
-				# workphone=02352/21585
-				# fax=fax
-				# mobile=mobile
-				# nick=Gorden
-				# url=http://bl;ahlbahl.com
-				# notes=CellPhone#: 01758147773
+	while (<READ>) {
+		# [num]
+		# name=Full Name
+		# email=foo@bar.com,foo@barbar.com
+		# address=Street
+		# city=City
+		# state=State
+		# zip=123123
+		# country=Country
+		# phone=1234/1234525
+		# workphone=1234/123455
+		# fax=fax
+		# mobile=mobile
+		# nick=Nick
+		# url=http://bl;ahlbahl.com
+		# notes=CellPhone#: 12345678901
+	
+		next LOOP if (m/^#/);
 
-				next LOOP if (m/^#/);
-
-				if (m/^\[\d+\]$/)
-				{
-						$count++;
-						next LOOP;
-				}
-
-				if (m/^$/)
-				{
-						my $x;
-						# no entries without a note
-						if ($info{'name'})
-						{
-								my @name = split / /, $info{'name'}, 2;
-								
-								print WRITE "BEGIN:VCARD\n";
-								print WRITE "FN:$info{'name'}\n";
-								print WRITE "N:";
-								foreach $x (reverse @name)
-								{
-										print WRITE "$x;";
-								}
-								print WRITE "\n";
-								
-								my @emails = split /,/, $info{'email'};
-								foreach $x (@emails)
-								{
-										print WRITE "EMAIL;INTERNET:$x\n";
-								}
-
-								if ($info{'address'})
-								{
-										print WRITE "ADR;HOME:Default;;$info{'address'};";
-										foreach $x ("city", "address", "zip", "country")
-										{
-												print WRITE "$info{$x};";
-										}
-										print WRITE "\n";
-								}
-
-								if ($info{'phone'})
-								{
-										print WRITE "TEL;HOME:$info{'phone'}\n";
-								}
-								if ($info{'workphone'})
-								{
-										print write "TEL;WORK:$info{'workphone'}\n";
-								}
-								if ($info{'fax'})
-								{
-										print write "TEL;FAX:$info{'fax'}\n";
-								}
-								if ($info{'mobile'})
-								{
-										print write "TEL;CELL:$info{'mobile'}\n";
-								}
-
-								if ($info{'url'})
-								{
-										print WRITE "URL:$info{'url'}\n";
-								}
-								if ($info{'notes'})
-								{
-										print WRITE "NOTE:$info{'notes'}\n";
-								}
-
-								print WRITE "END:VCARD\n\n";
-								
-						}
-
-						foreach $x (keys %info)
-						{
-								$info{$x} = "";
-						}
-						next LOOP;
-				}
-
-				if ($count)
-				{
-						my ($key, $val) = split /=/;
-						if ($val)
-						{
-								chomp($val);
-								$info{$key} = $val;
-						}
-						next LOOP;
-				}
+		if (m/^\[\d+\]$/) {
+			$count++;
+			next LOOP;
 		}
+
+		if (m/^$/) {
+			my $x;
+			# no entries without a note
+			if ($info{'name'}) {
+				my @name = split / /, $info{'name'}, 2;
+
+				print WRITE "BEGIN:VCARD\n";
+				print WRITE "FN:$info{'name'}\n";
+				print WRITE "N:";
+				foreach $x (reverse @name) {
+					print WRITE "$x;";
+				}
+				print WRITE "\n";
+
+				my @emails = split /,/, $info{'email'};
+				foreach $x (@emails) {
+					print WRITE "EMAIL;INTERNET:$x\n";
+				}
+
+				if ($info{'address'}) {
+					print WRITE "ADR;HOME:Default;;$info{'address'};";
+					foreach $x ("city", "address", "zip", "country") {
+						print WRITE "$info{$x};";
+					}
+					print WRITE "\n";
+				}
+
+				if ($info{'phone'}) {
+					print WRITE "TEL;HOME:$info{'phone'}\n";
+				}
+				if ($info{'workphone'}) {
+					print write "TEL;WORK:$info{'workphone'}\n";
+				}
+				if ($info{'fax'}) {
+					print write "TEL;FAX:$info{'fax'}\n";
+				}
+				if ($info{'mobile'}) {
+					print write "TEL;CELL:$info{'mobile'}\n";
+				}
+				if ($info{'url'}) {
+					print WRITE "URL:$info{'url'}\n";
+				}
+				if ($info{'notes'}) {
+					print WRITE "NOTE:$info{'notes'}\n";
+				}
+
+				print WRITE "END:VCARD\n\n";
+
+			}
+
+			foreach $x (keys %info) {
+				$info{$x} = "";
+			}
+			next LOOP;
+		}
+
+		if ($count) {
+			my ($key, $val) = split /=/;
+			if ($val) {
+				chomp($val);
+				$info{$key} = $val;
+			}
+			next LOOP;
+		}
+	}
 }
 
 ###
@@ -451,8 +513,7 @@ sub parseJuno
 	my $count = 0;
 	my %info;
 LOOP:
-	while (<READ>)
-	{
+	while (<READ>) {
 		# Type:Entry
 		# Name:Burdell, George P.
 		# Email:burdell@gatech.edu,gburdell@cc.gatech.edu
@@ -460,34 +521,29 @@ LOOP:
 
 		next LOOP if (m/^#/);
 
-		if (m/^Type:Entry$/)
-		{
+		if (m/^Type:Entry$/) {
 			$count++;
 			next LOOP;
 		}
 
-		if (m/^$/)
-		{
+		if (m/^$/) {
 			my $x;
 			# no entries without a note
-			if ($info{'Name'})
-			{
+			if ($info{'Name'}) {
 				my @name = split /,/, $info{'Name'}, 2;
 
 				print WRITE "BEGIN:VCARD\n";
 				print WRITE "FN:";
-				foreach $x (reverse @name)
-				{
-					# Trim leading/trailing whitespace
+				foreach $x (reverse @name) {
+				# Trim leading/trailing whitespace
 					$x =~ s/^\s+//;
 					$x =~ s/\s+$//;
 					print WRITE "$x ";
 				}
 				print WRITE "\n";
 				print WRITE "N:";
-				foreach $x (@name)
-				{
-					# Trim leading/trailing whitespace
+				foreach $x (@name) {
+				# Trim leading/trailing whitespace
 					$x =~ s/^\s+//;
 					$x =~ s/\s+$//;
 					print WRITE "$x;";
@@ -495,13 +551,11 @@ LOOP:
 				print WRITE "\n";
 
 				my @emails = split /,/, $info{'Email'};
-				foreach $x (@emails)
-				{
+				foreach $x (@emails) {
 					print WRITE "EMAIL;INTERNET:$x\n";
 				}
 
-				if ($info{'Alias'})
-				{
+				if ($info{'Alias'}) {
 					print WRITE "NOTE:$info{'Alias'}\n";
 				}
 
@@ -509,18 +563,15 @@ LOOP:
 
 			}
 
-			foreach $x (keys %info)
-			{
+			foreach $x (keys %info) {
 				$info{$x} = "";
 			}
 			next LOOP;
 		}
 
-		if ($count)
-		{
+		if ($count) {
 			my ($key, $val) = split /:/;
-			if ($val)
-			{
+			if ($val) {
 				chomp($val);
 				$info{$key} = $val;
 			}
@@ -530,17 +581,144 @@ LOOP:
 }
 
 ###
+# parses a ldif addressbook file
+###
+sub parseLdif
+{
+	my $count = 1;
+	my $key;
+	my $val;
+	my %info;
+	my %qp;
+	my %v;
+LOOP:
+	while (<READ>) {
+	# dn: cn=FIRST LNAME,mail=EM
+	# modifytimestamp: 20030227150502Z
+	# cn: FIRST LNAME
+	# mail: EM
+	# xmozillausehtmlmail: TRUE
+	# o: ORG
+	# locality: CITY
+	# givenname: FIRST
+	# sn: LNAME
+	# title: TITLE
+	# streetaddress:: QUREMQ0KQU
+	#  QUREMQ0KQUREMg==
+	# postalcode: ZIP
+	# countryname: COUN
+	# telephonenumber: WORKph
+	# facsimiletelephonenumber: FAX
+	# xmozillaanyphone: WORKph
+	# homephone: HOMEPH
+	# cellphone: CELL
+	# ou: DPT
+	# homeurl: URL
+	# st: STAT
+	# xmozillanickname: NICK
+	# description:: Tk9UMQ0KTk9UMg==
+	# pagerphone: PAGER
+	# objectclass: top
+	# objectclass: person
+	
+		next LOOP if (m/^#/);
+
+		# if newline is followed by space, remove both
+		if (s/^ //ms) {
+			chomp();
+			s/\r?\n$//;
+			$info{$key} .= $_;
+			next LOOP;
+		}
+
+		if ($key && $qp{$key}) {
+			$val = decode_base64($info{$key});
+			$val = encode_qp($val);
+			$val =~ s/\n/=0A/g;
+			$info{$key} = $val;
+		}
+
+		if (m/^\r?$/) {
+			my $x;
+			# no entries without a note
+			if ($info{'dn'}) {
+				my @name = split /[=,]/, $info{'dn'}, 2;
+
+				print WRITE "BEGIN:VCARD\n";
+				print WRITE "FN:$info{'cn'}\n";
+				print WRITE "N:";
+				if ($info{'sn'}) {print WRITE "$info{'sn'};";}
+				if ($info{'givenname'}) {print WRITE "$info{'givenname'}";}
+				print WRITE "\n";
+
+				my @emails = split /,/, $info{'mail'};
+				foreach $x (@emails) {
+					print WRITE "EMAIL;INTERNET:$x\n";
+				}
+
+				if ($info{'streetaddress'}) {
+					print WRITE "ADR";
+					if ( $qp{"streetaddress"} || $qp{"locality"} ||
+						$qp{"address"} || $qp{"st"} ||
+						$qp{"postalcode"} || $qp{"countryname"}) {
+						print WRITE ";quoted-printable";
+					}
+					print WRITE ":;;$info{'streetaddress'};";
+					foreach $x ("locality", "address", "st", "postalcode", "countryname") {
+						print WRITE "$info{$x};";
+					}
+					print WRITE "\n";
+				}
+				Oneline($info{'homephone'}, 'TEL;HOME', $qp{'homephone'});
+				Oneline($info{'telephonenumber'}, 'TEL;WORK', $qp{'telephonenumber'});
+				Oneline($info{'facsimiletelephonenumber'}, 'TEL;FAX', $qp{'facsimiletelephonenumber'});
+				Oneline($info{'cellphone'}, 'TEL;CELL', $qp{'cellphone'});
+				Oneline($info{'pagerphone'}, 'tel;pager', $qp{'pagerphone'});
+				Oneline($info{'xmozillausehtmlmail'}, 'x-mozilla-html', $qp{'xmozillausehtmlmail'});
+				Oneline($info{'title'}, 'title', $qp{'title'});
+				Oneline($info{'homeurl'}, 'URL', $qp{'homeurl'});
+				Oneline($info{'description'}, 'NOTE', $qp{'description'});
+				if ($info{'o'}) {
+					print WRITE "org:$info{'o'};";
+					if ($info{'ou'}) {print WRITE "$info{'ou'}";}
+					print WRITE "\n";
+				}
+
+				print WRITE "END:VCARD\n\n";
+			}
+
+			foreach $x (keys %info) {
+				$info{$x} = "";
+				$qp{$x} = "";
+			}
+			$key = "";
+			next LOOP;
+		}
+
+		($key, $val) = split /: /;
+		if ($val) {
+			chomp($val);
+			$val =~ s/\r$//;
+			if ($key =~ s/:$//) {
+				$qp{$key} = 1;
+			}
+			$info{$key} = $val;
+		}
+		next LOOP;
+	}
+}
+
+###
 # prints a list of supported formats
 ###
 sub formats
 {
-		my $key;
+	my $key;
 
-		print "$NAME $VERSION can convert the addressbooks of the following:\n";
-		foreach $key (sort(keys %SUPPORTED))
-		{
-				print "\t$key\n";
-		}
+	print "$NAME $VERSION can convert the addressbooks of the following:\n";
+	foreach $key (sort(keys %SUPPORTED)) {
+		print "\t$key\n";
+	}
 }
 
 ###
@@ -548,13 +726,13 @@ sub formats
 ###
 sub usage
 {
-		print "$NAME: convert an addressbook to vcard format\n";
-		print "Usage: $NAME [OPTION...]\n";
-		print "Options:\n";
-		print "  -F\t\tshow supported formats\n";
-		print "  -f FORMAT\tconvert from FROMAT [ default: mutt ]\n";
-		print "  -h\t\tprint this message and exit\n";
-		print "  -i FILE\tread input from FILE\n";
-		print "  -o FILE\twrite output to FILE\n";
-		print "  -v\t\tprint version number and exit\n";
+	print "$NAME: convert an addressbook to vcard format\n";
+	print "Usage: $NAME [OPTION...]\n";
+	print "Options:\n";
+	print "  -F\t\tshow supported formats\n";
+	print "  -f FORMAT\tconvert from FROMAT [ default: mutt ]\n";
+	print "  -h\t\tprint this message and exit\n";
+	print "  -i FILE\tread input from FILE\n";
+	print "  -o FILE\twrite output to FILE\n";
+	print "  -v\t\tprint version number and exit\n";
 }

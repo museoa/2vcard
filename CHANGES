@@ -1,3 +1,10 @@
+2003-06-22: Released version 0.5:
+	    - support conversion from eudora
+	    - import changes from christophe.huibonhoa@memscap.com to
+              enable support for LDIF
+	    - minor bugfix in getopts handling
+            - minor code cleanup
+
 2002-11-27: Released version 0.4:
             - import changes from Gregory.Krohne@AFRC.AF.MIL to
               enable conversion from Juno

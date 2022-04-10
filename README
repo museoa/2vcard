@@ -1,9 +1,9 @@
 The 2vcard Handbook
 
 Jan Schaumann jschauma@netmeister.org 
-Version 0.4 , Wed Nov 27 17:39:58 EST 2002
+Version 0.5 , Sat Jun 21 18:14:30 EDT 2003
 
-This Handbook describes 2vcard Version 0.4 
+This Handbook describes 2vcard Version 0.5
 
 
 1. Introduction
@@ -31,7 +31,7 @@ pine's, abook's and juno's addressbook format.
 The VCARD format is used by gnomecard, for example, which in turn is used by
 the balsa email client. 
 
-This is version 0.4 of 2vcard.
+This is version 0.5 of 2vcard.
 
 ------------------------------------------
 2. Installation
@@ -40,11 +40,8 @@ This is version 0.4 of 2vcard.
 
 2vcard 0.4 can be obtained from:
 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.4.tar.gz - as a gzipped source-tarball 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.4.tar.bz2 - as a bzip2'ed source-tarball 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.4.i386.rpm - as a RPM 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.4.src.rpm - as a source RPM 
-   http://www.netmeister.org/apps/2vcard/2vcard_0.4-1_i386.deb - as a devian package 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.5.tar.gz - as a gzipped source-tarball 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.5.tar.bz2 - as a bzip2'ed source-tarball 
 
 2.2 Requirements
 
@@ -65,8 +62,8 @@ not the case, use your favorite editor to modify the first line of the file
 In order to install 2vcard from sources, type the following in the directory
 to which you downloaded the 2vcard distribution:
 
-   % tar zxvf 2vcard-0.4.tar.gz
-   % cd 2vcard-0.4
+   % tar zxvf 2vcard-0.5.tar.gz
+   % cd 2vcard-0.5
    % less README
    % su
    % make install
@@ -74,8 +71,6 @@ to which you downloaded the 2vcard distribution:
 
 This will install 2vcard in /usr/local/bin, the man page in /usr/local/share/man/man1/ and
 the documentation in /usr/local/share/doc/2vcard/.
-
-To install from RPM or .deb, please refer to rpm(1) or dpkg(1).
 
 Should you run into problems please report them to the the author at
 jschauma@netmeister.org
@@ -102,7 +97,7 @@ comments on this program,please don't hesitate to email me.
 
 4. Copyright
 
-2vcard Copyright 2001,2002 Jan Schaumann, jschauma@netmeister.org
+2vcard Copyright 2001,2002,2003 Jan Schaumann, jschauma@netmeister.org
 
  All rights reserved.
 
