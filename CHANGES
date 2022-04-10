@@ -1,3 +1,8 @@
+2002-11-27: Released version 0.4:
+            - import changes from Gregory.Krohne@AFRC.AF.MIL to
+              enable conversion from Juno
+            - change license to BSD style license
+
 2001-10-10: Released version 0.3:
             - now supports conversion from abook-addressbook files
 

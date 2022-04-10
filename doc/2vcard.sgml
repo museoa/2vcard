@@ -4,7 +4,7 @@
 	<refmeta>
 		<refentrytitle>2VCARD</refentrytitle>
 		<manvolnum>1</manvolnum>
-		<refmiscinfo class="date">September 23rd, 2001</refmiscinfo>
+		<refmiscinfo class="date">November 27th, 2002</refmiscinfo>
 		<refmiscinfo class="source">2vcard</refmiscinfo>
 		<refmiscinfo class="title">Addressbook conversion tools</refmiscinfo>
 	</refmeta>
@@ -34,7 +34,7 @@
 			addressbook to the popular VCARD file format.  Currently,
 			<command>2vcard</command> can convert
 			<command>mutt</command>'s and <command>mh</command>'s alias as well as
-			<command>pine</command>'s and <command>abook</command>'s addressbook format.
+			<command>pine</command>'s, <command>abook</command>'s and juno's addressbook format.
         </para>
         <para>
 			The VCARD format is used by <command>gnomecard</command>, for
@@ -134,7 +134,7 @@
 	<refsect1>
 		<title>VERSION</title>
 		<para>
-			0.3
+			0.4
 		</para>
 	</refsect1>
 

@@ -21,7 +21,7 @@ addressbook to the popular VCARD file format.
 Currently,
 \fB2vcard\fR can convert
 \fBmutt\fR's and \fBmh\fR's alias as well as
-\fBpine\fR's and \fBabook\fR's addressbook format.
+\fBpine\fR's, \fBabook\fR's and juno's addressbook format.
 .PP
 The VCARD format is used by \fBgnomecard\fR, for
 example, which, in turn is used by the \fBbalsa\fR
@@ -65,8 +65,9 @@ Show version information and exit.
 .\" Begin List
 .TP
 In a pipe:
-\fB2vcard -f pine\fR <
-\fI~/.addressbook\fR
+\fBcat\fR
+\fI~/.addressbook\fR |
+\fB2vcard \-p\fR
 .TP
 Alone:
 \fB2vcard \-i\fR
@@ -85,7 +86,7 @@ Please report all bugs to the author.
 .SH "SEE ALSO"
 .PP
 \fBmutt(1)\fR, \fBpine(1)\fR,
-\fBgnoemcard(1)\fR, \fBbalsa(1)\fR,
+\fBgnomecard(1)\fR, \fBbalsa(1)\fR,
 \fBnmh(1)\fR, \fBexmh(1)\fR,
 \fBabook(1)\fR
 .PP

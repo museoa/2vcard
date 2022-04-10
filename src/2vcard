@@ -4,31 +4,41 @@ use strict;
 ###############################################################################
 #
 # $Author: Jan Schaumann <jschauma@netmeister.org> $
-# $Id: 2vcard v 0.3 2001-09-24 13:58:44 Jan Schaumann Exp $
+# $Id: 2vcard v 0.4 2002-11-27 17:48:44 Jan Schaumann Exp $
 #
-# Copyright (c) 2001, Jan Schaumann <jschauma@netmeister.org>
+# Copyright (c) 2001,2002 Jan Schaumann <jschauma@netmeister.org>
 # All rights reserved.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#   * Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * The name of the author may not be used to endorse or promote products
+#     derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 ###############################################################################
 
 use Getopt::Std;
 
 my $NAME = "2vcard";
-my $VERSION = "0.3";
-my %SUPPORTED = ("abook" => 0, "mh" => 0, "mutt" => 1, "pine" => 0);
+my $VERSION = "0.4";
+my %SUPPORTED = ("abook" => 0, "mh" => 0, "mutt" => 1, "pine" => 0, "juno" => 0);
 
 init();
 main();
@@ -118,7 +128,7 @@ sub setFormat
 		{
 				$SUPPORTED{"$key"} = 0;
 		}
-		if ($which =~ m/(abook)|(mh)|(pine)|(mutt)/)
+		if ($which =~ m/(abook)|(mh)|(pine)|(mutt)|(juno)/)
 		{
 				$SUPPORTED{"$which"} = 1;
 		}
@@ -140,6 +150,7 @@ sub main
 		parsePine() if ($SUPPORTED{"pine"});
 		parseMH() if ($SUPPORTED{"mh"});
 		parseAbook() if ($SUPPORTED{"abook"});
+		parseJuno() if ($SUPPORTED{"juno"});
 }
 
 ###
@@ -430,6 +441,92 @@ LOOP:
 						next LOOP;
 				}
 		}
+}
+
+###
+# parses a Juno address book export file
+###
+sub parseJuno
+{
+	my $count = 0;
+	my %info;
+LOOP:
+	while (<READ>)
+	{
+		# Type:Entry
+		# Name:Burdell, George P.
+		# Email:burdell@gatech.edu,gburdell@cc.gatech.edu
+		# Alias:YellowJacket
+
+		next LOOP if (m/^#/);
+
+		if (m/^Type:Entry$/)
+		{
+			$count++;
+			next LOOP;
+		}
+
+		if (m/^$/)
+		{
+			my $x;
+			# no entries without a note
+			if ($info{'Name'})
+			{
+				my @name = split /,/, $info{'Name'}, 2;
+
+				print WRITE "BEGIN:VCARD\n";
+				print WRITE "FN:";
+				foreach $x (reverse @name)
+				{
+					# Trim leading/trailing whitespace
+					$x =~ s/^\s+//;
+					$x =~ s/\s+$//;
+					print WRITE "$x ";
+				}
+				print WRITE "\n";
+				print WRITE "N:";
+				foreach $x (@name)
+				{
+					# Trim leading/trailing whitespace
+					$x =~ s/^\s+//;
+					$x =~ s/\s+$//;
+					print WRITE "$x;";
+				}
+				print WRITE "\n";
+
+				my @emails = split /,/, $info{'Email'};
+				foreach $x (@emails)
+				{
+					print WRITE "EMAIL;INTERNET:$x\n";
+				}
+
+				if ($info{'Alias'})
+				{
+					print WRITE "NOTE:$info{'Alias'}\n";
+				}
+
+				print WRITE "END:VCARD\n\n";
+
+			}
+
+			foreach $x (keys %info)
+			{
+				$info{$x} = "";
+			}
+			next LOOP;
+		}
+
+		if ($count)
+		{
+			my ($key, $val) = split /:/;
+			if ($val)
+			{
+				chomp($val);
+				$info{$key} = $val;
+			}
+			next LOOP;
+		}
+	}
 }
 
 ###
