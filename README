@@ -1,10 +1,10 @@
 The 2vcard Handbook
 
 Jan Schaumann jschauma@netmeister.org 
-Version 0.2 , Sun September 23 14:56:22 EST 2001
+Version 0.3 , Sun September 23 14:56:22 EST 2001
 Back to netmeister.org 
 
-This Handbook describes 2vcard Version 0.2 
+This Handbook describes 2vcard Version 0.3 
 
 
 1. Introduction
@@ -27,25 +27,25 @@ This Handbook describes 2vcard Version 0.2
 
 2vcard is a little perl script to convert an addressbook to the popular VCARD
 file format. Currently, 2vcard can convert mutt's and mh's alias as well as
-pine's addressbook format. 
+pine's and abook's addressbook format. 
 
 The VCARD format is used by gnomecard, for example, which in turn is used by
 the balsa email client. 
 
-This is version 0.2 of 2vcard.
+This is version 0.3 of 2vcard.
 
 ------------------------------------------
 2. Installation
 
 2.1 How to obtain 2vcard
 
-2vcard 0.2 can be obtained from:
+2vcard 0.3 can be obtained from:
 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.2.tar.gz - as a gzipped source-tarball 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.2.tar.bz2 - as a bzip2'ed source-tarball 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.2.i386.rpm - as a RPM 
-   http://www.netmeister.org/apps/2vcard/2vcard-0.2.src.rpm - as a source RPM 
-   http://www.netmeister.org/apps/2vcard/2vcard_0.2-1_i386.deb - as a devian package 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.3.tar.gz - as a gzipped source-tarball 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.3.tar.bz2 - as a bzip2'ed source-tarball 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.3.i386.rpm - as a RPM 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.3.src.rpm - as a source RPM 
+   http://www.netmeister.org/apps/2vcard/2vcard_0.3-1_i386.deb - as a devian package 
 
 2.2 Requirements
 
@@ -66,8 +66,8 @@ not the case, use your favorite editor to modify the first line of the file
 In order to install 2vcard from sources, type the following in the directory
 to which you downloaded the 2vcard distribution:
 
-   % tar zxvf 2vcard-0.2.tar.gz
-   % cd 2vcard-0.2
+   % tar zxvf 2vcard-0.3.tar.gz
+   % cd 2vcard-0.3
    % less README
    % su
    % make install
@@ -91,7 +91,7 @@ input- and output-files can be specified as command-line options.
 Examples:
 
 In a pipe:
-cat ~/.addressbook | 2vcard -p
+2vcard -f pine < ~/.addressbook
 
 Alone:
 2vcard -i ~/.aliases -o ~/.addbook.grcd 

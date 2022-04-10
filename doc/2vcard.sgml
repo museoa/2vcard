@@ -17,7 +17,7 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>2vcard</command>
-				<arg choice="opt">-f | -h | -m | -p | -v </arg>
+				<arg choice="opt">-F | -f | -h | -v </arg>
 				<arg choice="opt">
 					-i <arg choice="req">FILE</arg>
 				</arg>
@@ -34,7 +34,7 @@
 			addressbook to the popular VCARD file format.  Currently,
 			<command>2vcard</command> can convert
 			<command>mutt</command>'s and <command>mh</command>'s alias as well as
-			<command>pine</command>'s addressbook format.
+			<command>pine</command>'s and <command>abook</command>'s addressbook format.
         </para>
         <para>
 			The VCARD format is used by <command>gnomecard</command>, for
@@ -62,10 +62,19 @@
 		</para>
 		<variablelist>
 			<varlistentry>
-				<term>-f</term>
+				<term>-F</term>
 				<listitem>
 					<para>
 						print a list of the currently supported formats
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-f <replaceable>format</replaceable></term>
+				<listitem>
+					<para>
+						convert from <replaceable>format</replaceable> [
+						default: mutt ]
 					</para>
 				</listitem>
 			</varlistentry>
@@ -82,23 +91,9 @@
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term>-m</term>
-				<listitem>
-					<para>Assume input to be in <command>mh</command>'s
-					alias format.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
 				<term>-o <emphasis>FILE</emphasis></term>
 				<listitem>
 					<para>Write output to <emphasis>FILE</emphasis>.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>-p</term>
-				<listitem>
-					<para>Assume input to be in <command>pine</command>'s
-					addressbook format.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
@@ -139,7 +134,7 @@
 	<refsect1>
 		<title>VERSION</title>
 		<para>
-			0.1
+			0.3
 		</para>
 	</refsect1>
 
@@ -155,7 +150,8 @@
 		<para>
 			<command>mutt(1)</command>, <command>pine(1)</command>,
 			<command>gnoemcard(1)</command>, <command>balsa(1)</command>,
-			<command>nmh(1)</command>, <command>exmh(1)</command>
+			<command>nmh(1)</command>, <command>exmh(1)</command>,
+			<command>abook(1)</command>
 		</para>
 		<para>
 			<ulink url="http://www.netmeister.org/apps/2vcard/">The 2vcard

@@ -1,5 +1,5 @@
 .\"
-.\" This page was created on 2001-09-23 14:43:23 by makeman.pl
+.\" This page was created on 2001-10-10 22:04:52 by makeman.pl
 .\" ``makeman.pl'' is part of the ``MakeMan'' project.
 .\" For more information, please see http://mama.sourceforge.net
 .\"
@@ -10,7 +10,7 @@
 
 .SH SYNOPSIS
 \fB2vcard\fR
-[ \fI\-f | \-h | \-m | \-p | \-v \fR ] [ \fI
+[ \fI\-F | \-f | \-h | \-v \fR ] [ \fI
 \-i \fR\fIFILE\fR ] [ \fI
 \-o \fR\fIFILE\fR ] 
 
@@ -21,11 +21,11 @@ addressbook to the popular VCARD file format.
 Currently,
 \fB2vcard\fR can convert
 \fBmutt\fR's and \fBmh\fR's alias as well as
-\fBpine\fR's addressbook format.
-
+\fBpine\fR's and \fBabook\fR's addressbook format.
 .PP
 The VCARD format is used by \fBgnomecard\fR, for
-example, which in turn is used by the \fBbalsa\fR email client.
+example, which, in turn is used by the \fBbalsa\fR
+email client.
 
 .SH "USAGE"
 .PP
@@ -41,8 +41,12 @@ A summary of the options supported by
 \fB2vcard\fR is included below.
 .\" Begin List
 .TP
-\fB\-f\fR
+\fB\-F\fR
 print a list of the currently supported formats
+.TP
+\fB\-f \fR\fIformat\fR
+convert from \fIformat\fR [
+default: mutt ]
 .TP
 \fB\-h\fR
 Show summary of options and exit.
@@ -50,16 +54,8 @@ Show summary of options and exit.
 \fB\-i \fR\fIFILE\fR
 Read input from \fIFILE\fR.
 .TP
-\fB\-m\fR
-Assume input to be in \fBmh\fR's
-alias format.
-.TP
 \fB\-o \fR\fIFILE\fR
 Write output to \fIFILE\fR.
-.TP
-\fB\-p\fR
-Assume input to be in \fBpine\fR's
-addressbook format.
 .TP
 \fB\-v\fR
 Show version information and exit.
@@ -81,7 +77,7 @@ Alone:
 
 .SH "VERSION"
 .PP
-0.1
+0.3
 
 .SH "BUGS"
 .PP
@@ -90,7 +86,9 @@ Please report all bugs to the author.
 .SH "SEE ALSO"
 .PP
 \fBmutt(1)\fR, \fBpine(1)\fR,
-\fBgnoemcard(1)\fR, \fBbalsa(1)\fR, \fBnmh(1)\fR, \fBexmh(1)\fR
+\fBgnoemcard(1)\fR, \fBbalsa(1)\fR,
+\fBnmh(1)\fR, \fBexmh(1)\fR,
+\fBabook(1)\fR
 .PP
 The 2vcard
 Handbook (Link to \fIhttp://www.netmeister.org/apps/2vcard/\fR)

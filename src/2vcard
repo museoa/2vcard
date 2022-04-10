@@ -4,7 +4,7 @@ use strict;
 ###############################################################################
 #
 # $Author: Jan Schaumann <jschauma@netmeister.org> $
-# $Id: 2vcard v 0.2 2001-09-24 13:58:44 Jan Schaumann Exp $
+# $Id: 2vcard v 0.3 2001-09-24 13:58:44 Jan Schaumann Exp $
 #
 # Copyright (c) 2001, Jan Schaumann <jschauma@netmeister.org>
 # All rights reserved.
@@ -27,8 +27,8 @@ use strict;
 use Getopt::Std;
 
 my $NAME = "2vcard";
-my $VERSION = "0.2";
-my %SUPPORTED = ("mh" => 0, "mutt" => 1, "pine" => 0);
+my $VERSION = "0.3";
+my %SUPPORTED = ("abook" => 0, "mh" => 0, "mutt" => 1, "pine" => 0);
 
 init();
 main();
@@ -48,7 +48,7 @@ exit 0;
 sub init
 {
 		my %Options;
-		my $ok = getopts('fhi:mo:pv', \%Options);
+		my $ok = getopts('Ff:hi:o:v', \%Options);
 		if (!$ok)
 		{
 				my $i;
@@ -71,6 +71,10 @@ sub init
 			die "Can't write to STDOUT -- WTF??\n";
 
 		if ($Options{'f'})
+		{
+				setFormat("$Options{'f'}");
+		}
+		if ($Options{'F'})
 		{
 				formats();
 				exit 0;
@@ -95,14 +99,6 @@ sub init
 				open(WRITE, ">$Options{'o'}") ||
 						die "Can't open \"$Options{'o'}\" for writing!\n";
 		}
-		if ($Options{'m'})
-		{
-				setFormat("mh");
-		}
-		if ($Options{'p'})
-		{
-				setFormat("pine");
-		}
 
 		if ($#ARGV > -1)
 		{
@@ -122,7 +118,17 @@ sub setFormat
 		{
 				$SUPPORTED{"$key"} = 0;
 		}
-		$SUPPORTED{"$which"} = 1;
+		if ($which =~ m/(abook)|(mh)|(pine)|(mutt)/)
+		{
+				$SUPPORTED{"$which"} = 1;
+		}
+		else
+		{
+				print STDERR "$NAME: ERROR:\n";
+				print STDERR "Format \"$which\" not supported.\n";
+				print STDERR "Try \"-F\" and/or \"-h\".\n";
+				exit(1);
+		}
 }
 
 ###
@@ -133,6 +139,7 @@ sub main
 		parseMutt() if ($SUPPORTED{"mutt"});
 		parsePine() if ($SUPPORTED{"pine"});
 		parseMH() if ($SUPPORTED{"mh"});
+		parseAbook() if ($SUPPORTED{"abook"});
 }
 
 ###
@@ -261,6 +268,7 @@ sub parseMH
 				}
 		}
 }
+
 ###
 # parses a pine addressbook file
 ###
@@ -308,6 +316,123 @@ sub parsePine
 }
 
 ###
+# parses a abook addressbook file
+###
+sub parseAbook
+{
+		my $count = 0;
+		my %info;
+LOOP:
+		while (<READ>)
+		{
+				# [num]
+				# name=Gorden Koch
+				# email=foo@bar.com,foo@barbar.com
+				# address=Street
+				# city=City
+				# state=State
+				# zip=123123
+				# country=Germany
+				# phone=0271/8902725
+				# workphone=02352/21585
+				# fax=fax
+				# mobile=mobile
+				# nick=Gorden
+				# url=http://bl;ahlbahl.com
+				# notes=CellPhone#: 01758147773
+
+				next LOOP if (m/^#/);
+
+				if (m/^\[\d+\]$/)
+				{
+						$count++;
+						next LOOP;
+				}
+
+				if (m/^$/)
+				{
+						my $x;
+						# no entries without a note
+						if ($info{'name'})
+						{
+								my @name = split / /, $info{'name'}, 2;
+								
+								print WRITE "BEGIN:VCARD\n";
+								print WRITE "FN:$info{'name'}\n";
+								print WRITE "N:";
+								foreach $x (reverse @name)
+								{
+										print WRITE "$x;";
+								}
+								print WRITE "\n";
+								
+								my @emails = split /,/, $info{'email'};
+								foreach $x (@emails)
+								{
+										print WRITE "EMAIL;INTERNET:$x\n";
+								}
+
+								if ($info{'address'})
+								{
+										print WRITE "ADR;HOME:Default;;$info{'address'};";
+										foreach $x ("city", "address", "zip", "country")
+										{
+												print WRITE "$info{$x};";
+										}
+										print WRITE "\n";
+								}
+
+								if ($info{'phone'})
+								{
+										print WRITE "TEL;HOME:$info{'phone'}\n";
+								}
+								if ($info{'workphone'})
+								{
+										print write "TEL;WORK:$info{'workphone'}\n";
+								}
+								if ($info{'fax'})
+								{
+										print write "TEL;FAX:$info{'fax'}\n";
+								}
+								if ($info{'mobile'})
+								{
+										print write "TEL;CELL:$info{'mobile'}\n";
+								}
+
+								if ($info{'url'})
+								{
+										print WRITE "URL:$info{'url'}\n";
+								}
+								if ($info{'notes'})
+								{
+										print WRITE "NOTE:$info{'notes'}\n";
+								}
+
+								print WRITE "END:VCARD\n\n";
+								
+						}
+
+						foreach $x (keys %info)
+						{
+								$info{$x} = "";
+						}
+						next LOOP;
+				}
+
+				if ($count)
+				{
+						my ($key, $val) = split /=/;
+						if ($val)
+						{
+								chomp($val);
+								$info{$key} = $val;
+						}
+						next LOOP;
+				}
+		}
+}
+
+###
 # prints a list of supported formats
 ###
 sub formats
@@ -329,11 +454,10 @@ sub usage
 		print "$NAME: convert an addressbook to vcard format\n";
 		print "Usage: $NAME [OPTION...]\n";
 		print "Options:\n";
-		print "  -f\t\tprint list of supported formats and exit\n";
+		print "  -F\t\tshow supported formats\n";
+		print "  -f FORMAT\tconvert from FROMAT [ default: mutt ]\n";
 		print "  -h\t\tprint this message and exit\n";
 		print "  -i FILE\tread input from FILE\n";
-		print "  -m\t\tconvert from mh-alias file\n";
 		print "  -o FILE\twrite output to FILE\n";
-		print "  -p\t\tconvert from pine-addressbook file\n";
 		print "  -v\t\tprint version number and exit\n";
 }
