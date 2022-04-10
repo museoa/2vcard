@@ -1,0 +1,134 @@
+The 2vcard Handbook
+
+Jan Schaumann jschauma@netmeister.org 
+Version 0.1 , Sun September 23 14:56:22 EST 2001
+Back to netmeister.org 
+
+This Handbook describes 2vcard Version 0.1 
+
+
+1. Introduction
+
+2. Installation
+
+  2.1 How to obtain 2vcard 
+  2.2 Requirements 
+  2.3 Compilation and installation 
+
+3. Usage
+
+4. Copyright
+
+5. Misc
+
+------------------------------------------
+
+1. Introduction
+
+2vcard is a little perl script to convert an addressbook to the popular VCARD
+file format. Currently, 2vcard can convert mutt's alias as well as pine's
+addressbook format. 
+
+The VCARD format is used by gnomecard, for example, which in turn is used by
+the balsa email client. 
+
+This is version 0.1 of 2vcard.
+
+------------------------------------------
+2. Installation
+
+2.1 How to obtain 2vcard
+
+2vcard 0.1 can be obtained from:
+
+   http://www.netmeister.org/apps/2vcard/2vcard-0.1.tar.gz - as a gzipped source-tarball 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.1.tar.bz2 - as a bzip2'ed source-tarball 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.1.i386.rpm - as a RPM 
+   http://www.netmeister.org/apps/2vcard/2vcard-0.1.src.rpm - as a source RPM 
+   http://www.netmeister.org/apps/2vcard/2vcard_0.1-1_i386.deb - as a devian package 
+
+2.2 Requirements
+
+In order to successfully use 2vcard, you need the following programs and
+libraries which are available on most platforms as distribution packages and
+thereby can be installed easily.
+
+Required:
+
+   Perl http://www.perl.com 
+
+2.3 Compilation and installation
+
+2vcard assumes that the Perl executable lives in /usr/bin/perl - if that is
+not the case, use your favorite editor to modify the first line of the file
+2vcard accordingly.
+
+In order to install 2vcard from sources, type the following in the directory
+to which you downloaded the 2vcard distribution:
+
+   % tar zxvf 2vcard-0.1.tar.gz
+   % cd 2vcard-0.1
+   % less README
+   % su
+   % make install
+
+
+This will install 2vcard in /usr/bin, the man page in /usr/share/man/man1/ and
+the documentation in /usr/share/doc/2vcard/
+
+To install from RPM or .deb, please refer to rpm(1) or dpkg(1).
+
+Should you run into problems please report them to the the author at
+jschauma@netmeister.org
+
+------------------------------------------
+
+3. Usage
+
+Per default, 2vcard reads from stdin and writes to stdout. Alternatively, the
+input- and output-files can be specified as command-line options. 
+
+Examples:
+
+In a pipe:
+cat ~/.addressbook | 2vcard -p
+
+Alone:
+2vcard -i ~/.aliases -o ~/.addbook.grcd 
+
+If you run into any problems, if you encounter bugs, or if you have any other
+comments on this program,please don't hesitate to email me.
+
+------------------------------------------
+
+4. Copyright
+
+2vcard Copyright 2001 Jan Schaumann, jschauma@netmeister.org
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option) any
+later version. 
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details. 
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 675
+Mass Ave, Cambridge, MA 02139, USA. 
+
+------------------------------------------
+
+5. Misc
+
+Please take the time to visit these websites:
+
+   http://www.hrweb.org/legal/udhr.html 
+   http://www.aclu.org 
+   http://www.amnesty.org 
+   http://www.worldwildlife.org 
+   http://www.ncadp.org 
+
+Take the time to think about it.

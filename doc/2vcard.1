@@ -1,0 +1,99 @@
+.\"
+.\" This page was created on 2001-09-23 14:43:23 by makeman.pl
+.\" ``makeman.pl'' is part of the ``MakeMan'' project.
+.\" For more information, please see http://mama.sourceforge.net
+.\"
+.TH 2VCARD 1 "September 23rd, 2001" "2vcard" "Addressbook conversion tools" 
+
+.SH NAME
+2vcard \- convert addressbooks to VCARD format
+
+.SH SYNOPSIS
+\fB2vcard\fR
+[ \fI\-f | \-h | \-m | \-p | \-v \fR ] [ \fI
+\-i \fR\fIFILE\fR ] [ \fI
+\-o \fR\fIFILE\fR ] 
+
+.SH "DESCRIPTION"
+.PP
+\fB2vcard\fR is a little perl script to convert an
+addressbook to the popular VCARD file format.
+Currently,
+\fB2vcard\fR can convert
+\fBmutt\fR's alias as well as
+\fBpine\fR's addressbook format.
+.PP
+The VCARD format is used by \fBgnomecard\fR, for
+example, which in turn is used by the \fBbalsa\fR email client.
+
+.SH "USAGE"
+.PP
+Per default, \fB2vcard\fR reads
+from \fIstdin\fR and
+writes to \fIstdout\fR. Alternatively,
+the input\- and output\-files can be specified as command\-line
+options.
+
+.SH "OPTIONS"
+.PP
+A summary of the options supported by
+\fB2vcard\fR is included below.
+.\" Begin List
+.TP
+\fB\-f\fR
+print a list of the currently supported formats
+.TP
+\fB\-h\fR
+Show summary of options and exit.
+.TP
+\fB\-i \fR\fIFILE\fR
+Read input from \fIFILE\fR.
+.TP
+\fB\-m\fR
+Assume input to be in \fBmutt\fR's
+alias format. [ DEFAULT ]
+.TP
+\fB\-o \fR\fIFILE\fR
+Write output to \fIFILE\fR.
+.TP
+\fB\-p\fR
+Assume input to be in \fBpine\fR's
+addressbook format.
+.TP
+\fB\-v\fR
+Show version information and exit.
+.\" End List
+
+.SH "EXAMPLES"
+.\" Begin List
+.TP
+In a pipe:
+\fBcat\fR
+\fI~/.addressbook\fR |
+\fB2vcard \-p\fR
+.TP
+Alone:
+\fB2vcard \-i\fR
+\fI~/.aliases\fR \fB\-o\fR
+\fI~/.addbook.grcd\fR
+.\" End List
+
+.SH "VERSION"
+.PP
+0.1
+
+.SH "BUGS"
+.PP
+Please report all bugs to the author.
+
+.SH "SEE ALSO"
+.PP
+\fBmutt(1)\fR, \fBpine(1)\fR,
+\fBgnoemcard(1)\fR, \fBbalsa(1)\fR
+.PP
+The 2vcard
+Handbook (Link to \fIhttp://www.netmeister.org/apps/2vcard/\fR)
+
+.SH "AUTHOR"
+.PP
+Jan Schaumann <jschauma@netmeister.org>

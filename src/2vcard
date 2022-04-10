@@ -1,0 +1,299 @@
+#!/usr/bin/perl -w
+use strict;
+
+###############################################################################
+#
+# $Author: Jan Schaumann <jschauma@netmeister.org> $
+# $Id: 2vcard v 0.1 2001-09-23 14:31:01 Jan Schaumann Exp $
+#
+# Copyright (c) 2001, Jan Schaumann <jschauma@netmeister.org>
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+###############################################################################
+
+use Getopt::Std;
+
+my $OUTPUT = "";
+
+my $NAME = "2vcard";
+my $VERSION = "0.1";
+my %SUPPORTED = ("mutt" => 1, "pine" => 0);
+
+init();
+main();
+done();
+
+#we're done - bye, bye
+exit 0;
+
+
+#########             #########
+#########  Functions  #########
+#########             #########
+
+###
+# parses command-line options etc.
+###
+sub init
+{
+		my %Options;
+		my $ok = getopts('fhi:mo:pv', \%Options);
+		if (!$ok)
+		{
+				my $i;
+				my @values = keys(%Options);
+				foreach $i (@values)
+				{
+						if (!$Options{$i})
+						{
+								print STDERR "Option '$i' requires an argument.\n";
+								print STDERR "Try $NAME -h for details.\n";
+								exit(1);
+						}
+				}
+		}
+
+		open (READ, "<&STDIN") ||
+			die "Can't read from STDIN-- WTF??\n";
+
+		open (WRITE, ">&STDOUT") ||
+			die "Can't write to STDOUT -- WTF??\n";
+
+		if ($Options{'f'})
+		{
+				formats();
+				exit 0;
+		}
+		if ($Options{'h'})
+		{
+				usage();
+				exit 0;
+		}
+		if ($Options{'v'})
+		{
+				print "$NAME Version $VERSION\n";
+				exit 0;
+		}
+		if ($Options{'i'})
+		{
+				open(READ, "$Options{'i'}") ||
+						die "Can't open \"$Options{'i'}\" for reading!\n";
+		}
+		if ($Options{'o'})
+		{
+				open(WRITE, ">$Options{'o'}") ||
+						die "Can't open \"$Options{'o'}\" for writing!\n";
+		}
+		if ($Options{'m'})
+		{
+				setFormat("mutt");
+		}
+		if ($Options{'p'})
+		{
+				setFormat("pine");
+		}
+
+		if ($#ARGV > -1)
+		{
+				usage();
+				exit(1);
+		}
+}
+
+###
+# sets the current format
+###
+sub setFormat
+{
+		my ($which) = @_;
+		my $key;
+		foreach $key (keys %SUPPORTED)
+		{
+				$SUPPORTED{"$key"} = 0;
+		}
+		$SUPPORTED{"$which"} = 1;
+}
+
+###
+# check which format we want to read and dispatch to the proper function
+###
+sub main
+{
+		parseMutt() if ($SUPPORTED{"mutt"});
+		parsePine() if ($SUPPORTED{"pine"});
+}
+
+###
+# cleanup before we say bye bye
+###
+sub done
+{
+		close WRITE;
+		close READ;
+}
+
+###
+# parses a mutt aliases file
+###
+sub parseMutt
+{
+		while (<READ>)
+		{
+				# alias nick email@address (full name)
+				if (m/^alias (.*) (.*) \((.*)\)$/)
+				{
+						my @name = split / /, $3, 2;
+						my $x;
+						
+						print WRITE "BEGIN:VCARD\n";
+						print WRITE "FN:$3\n";
+						print WRITE "N:";
+						foreach $x (reverse @name)
+						{
+								print WRITE "$x;";
+						}
+						print WRITE "\n";
+
+						$x = $2;
+						if ($x =~ m/(.*,.*)/)
+						{
+								my @emails = split /,/, $1;
+								foreach $x (@emails)
+								{
+										print WRITE "EMAIL;INTERNET:$x\n";
+								}
+						}
+						else
+						{
+								print WRITE "EMAIL;INTERNET:$x\n";
+						}
+						print WRITE "END:VCARD\n\n";
+				}
+				# alias nick full name <email@address>
+				elsif (m/^alias ([^\s]*) (.*) (<.*>)/)
+				{
+						my @name = split / /, $2, 2;
+						my $x;
+
+						print WRITE "BEGIN:VCARD\n";
+						print WRITE "FN:$2\n";
+						print WRITE "N:";
+						foreach $x (reverse @name)
+						{
+								print WRITE "$x;";
+						}
+						print WRITE "\n";
+
+						$x = $3;
+						if ($x =~ m/(.*,.*)/)
+						{
+								my @emails = split /,/, $1;
+								foreach $x (@emails)
+								{
+										$x =~ s/[<>]//g;
+										print WRITE "EMAIL;INTERNET:$x\n";
+								}
+						}
+						else
+						{
+								$x =~ s/[<>]//g;
+								print WRITE "EMAIL;INTERNET:$x\n";
+						}
+						print WRITE "END:VCARD\n\n";
+
+				}
+				else
+				{
+						print STDERR "Skipping ill-formatted line:\n";
+						print STDERR "   $_\n";
+				}
+		}
+}
+
+###
+# parses a pine addressbook file
+###
+sub parsePine
+{
+		while (<READ>)
+		{
+				if (m/^(.*)\t(.*)\t(.*\@.*)$/)
+				{
+						my @name = split / /, $2, 2;
+						my $x;
+						
+						print WRITE "BEGIN:VCARD\n";
+						print WRITE "FN:$2\n";
+						print WRITE "N:";
+						foreach $x (reverse @name)
+						{
+								print WRITE "$x;";
+						}
+						print WRITE "\n";
+
+						$x = $3;
+						if ($x =~ m/\((.*)\)/)
+						{
+								my @emails = split /,/, $1;
+								foreach $x (@emails)
+								{
+										print WRITE "EMAIL;INTERNET:$x\n";
+								}
+						}
+						else
+						{
+								print WRITE "EMAIL;INTERNET:$3\n";
+						}
+						print WRITE "END:VCARD\n\n";
+				}
+				else
+				{
+						print STDERR "Skipping ill-formatted line:\n";
+						print STDERR "   $_\n";
+				}
+		}
+}
+
+###
+# prints a list of supported formats
+###
+sub formats
+{
+		my $key;
+
+		print "$NAME $VERSION can convert the addressbooks of the following:\n";
+		foreach $key (keys %SUPPORTED)
+		{
+				print "\t$key\n";
+		}
+}
+
+###
+# prints out helpful information
+###
+sub usage
+{
+		print "$NAME: convert an addressbook to vcard format\n";
+		print "Usage: $NAME [OPTION...]\n";
+		print "Options:\n";
+		print "  -f\t\tprint list of supported formats and exit\n";
+		print "  -h\t\tprint this message and exit\n";
+		print "  -i FILE\tread input from FILE\n";
+		print "  -m\t\tconvert from mutt-alias file [default]\n";
+		print "  -o FILE\twrite output to FILE\n";
+		print "  -p\t\tconvert from pine-addressbook file\n";
+		print "  -v\t\tprint version number and exit\n";
+}

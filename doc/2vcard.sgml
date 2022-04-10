@@ -1,0 +1,171 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+
+<refentry>
+	<refmeta>
+		<refentrytitle>2VCARD</refentrytitle>
+		<manvolnum>1</manvolnum>
+		<refmiscinfo class="date">September 23rd, 2001</refmiscinfo>
+		<refmiscinfo class="source">2vcard</refmiscinfo>
+		<refmiscinfo class="title">Addressbook conversion tools</refmiscinfo>
+	</refmeta>
+
+	<refnamediv>
+		<refname>2vcard</refname>
+		<refpurpose>convert addressbooks to VCARD format</refpurpose>
+	</refnamediv>
+
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>2vcard</command>
+				<arg choice="opt">-f | -h | -m | -p | -v </arg>
+				<arg choice="opt">
+					-i <arg choice="req">FILE</arg>
+				</arg>
+				<arg choice="opt">
+					-o <arg choice="req">FILE</arg>
+				</arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+
+	<refsect1>
+		<title>DESCRIPTION</title>
+		<para>
+			<command>2vcard</command> is a little perl script to convert an
+			addressbook to the popular VCARD file format.  Currently,
+			<command>2vcard</command> can convert
+			<command>mutt</command>'s alias as well as
+			<command>pine</command>'s addressbook format.
+        </para>
+        <para>
+			The VCARD format is used by <command>gnomecard</command>, for
+			example, which, in turn is used by the <command>balsa</command>
+			email client.
+		</para>
+	</refsect1>
+	
+	<refsect1>
+		<title>USAGE</title>
+		<para>
+			Per default, <command>2vcard</command> reads
+			from <emphasis>stdin</emphasis> and
+			writes to <emphasis>stdout</emphasis>. Alternatively,
+			the input- and output-files can be specified as command-line
+			options.
+		</para>
+	</refsect1>
+	
+	<refsect1>
+		<title>OPTIONS</title>
+		<para>
+			A summary of the options supported by
+			<command>2vcard</command> is included below.  
+		</para>
+		<variablelist>
+			<varlistentry>
+				<term>-f</term>
+				<listitem>
+					<para>
+						print a list of the currently supported formats
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-h</term>
+				<listitem>
+					<para>Show summary of options and exit.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-i <emphasis>FILE</emphasis></term>
+				<listitem>
+					<para>Read input from <emphasis>FILE</emphasis>.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-m</term>
+				<listitem>
+					<para>Assume input to be in <command>mutt</command>'s
+					alias format. [ DEFAULT ]</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-o <emphasis>FILE</emphasis></term>
+				<listitem>
+					<para>Write output to <emphasis>FILE</emphasis>.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-p</term>
+				<listitem>
+					<para>Assume input to be in <command>pine</command>'s
+					addressbook format.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>-v</term>
+				<listitem>
+					<para>Show version information and exit.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+
+	<refsect1>
+		<title>EXAMPLES</title>
+		<variablelist>
+			<varlistentry>
+				<term>In a pipe:</term>
+				<listitem>
+					<para>
+						<command>cat</command>
+						<emphasis>~/.addressbook</emphasis> |
+						<command>2vcard -p</command>
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>Alone:</term>
+				<listitem>
+					<para>
+						<command>2vcard -i</command>
+						<emphasis>~/.aliases</emphasis> <command>-o</command>
+						<emphasis>~/.addbook.grcd</emphasis>
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	
+	<refsect1>
+		<title>VERSION</title>
+		<para>
+			0.1
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>BUGS</title>
+		<para>
+			Please report all bugs to the author.
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>SEE ALSO</title>
+		<para>
+			<command>mutt(1)</command>, <command>pine(1)</command>,
+			<command>gnoemcard(1)</command>, <command>balsa(1)</command>
+		</para>
+		<para>
+			<ulink url="http://www.netmeister.org/apps/2vcard/">The 2vcard
+			Handbook</ulink>
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>AUTHOR</title>
+		<para>
+			Jan Schaumann <email>jschauma@netmeister.org</email>
+		</para>
+	</refsect1>
+</refentry>

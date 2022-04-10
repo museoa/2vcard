@@ -1,0 +1,21 @@
+makeman.pl assumes that the Perl executable lives in /usr/bin/perl - if that
+is not the case, use your favorite editor to modify the first line of the file
+makeman.pl accordingly.
+
+In order to install makeman.pl from sources, type the following in the
+directory to which you downloaded the makeman.pl distribution:
+
+% tar zxvf makeman.pl-0.3.tar.gz
+% cd makeman.pl-0.3
+% less README
+% su
+% make install
+
+This will install makeman.pl in /usr/bin, the man page in
+/usr/share/man/man1/ and the documentation in
+/usr/share/doc/makeman/makeman-perl/
+
+To install from RPM or .deb, please refer to rpm(1) or dpkg(1).
+
+Should you run into problems please report them to the the author at
+jschauma@netmeister.org 
