@@ -4,7 +4,7 @@ use strict;
 ###############################################################################
 #
 # $Author: Jan Schaumann <jschauma@netmeister.org> $
-# $Id: 2vcard v 0.1 2001-09-23 14:31:01 Jan Schaumann Exp $
+# $Id: 2vcard v 0.2 2001-09-24 13:58:44 Jan Schaumann Exp $
 #
 # Copyright (c) 2001, Jan Schaumann <jschauma@netmeister.org>
 # All rights reserved.
@@ -26,11 +26,9 @@ use strict;
 
 use Getopt::Std;
 
-my $OUTPUT = "";
-
 my $NAME = "2vcard";
-my $VERSION = "0.1";
-my %SUPPORTED = ("mutt" => 1, "pine" => 0);
+my $VERSION = "0.2";
+my %SUPPORTED = ("mh" => 0, "mutt" => 1, "pine" => 0);
 
 init();
 main();
@@ -99,7 +97,7 @@ sub init
 		}
 		if ($Options{'m'})
 		{
-				setFormat("mutt");
+				setFormat("mh");
 		}
 		if ($Options{'p'})
 		{
@@ -134,6 +132,7 @@ sub main
 {
 		parseMutt() if ($SUPPORTED{"mutt"});
 		parsePine() if ($SUPPORTED{"pine"});
+		parseMH() if ($SUPPORTED{"mh"});
 }
 
 ###
@@ -224,12 +223,53 @@ sub parseMutt
 }
 
 ###
+# parses a mh alias file
+###
+sub parseMH
+{
+		while (<READ>)
+		{
+				# alias: email@address, email@address
+				if (m/^(.*): (.*)/)
+				{
+						my $x;
+						
+						print WRITE "BEGIN:VCARD\n";
+						print WRITE "FN:$1\n";
+						print WRITE "N:$1\n";
+
+						$x = $2;
+						if ($x =~ m/(.*,.*)/)
+						{
+								my @emails = split /,/, $1;
+								foreach $x (@emails)
+								{
+										$x =~ s/\s//g;
+										print WRITE "EMAIL;INTERNET:$x\n";
+								}
+						}
+						else
+						{
+								print WRITE "EMAIL;INTERNET:$x\n";
+						}
+						print WRITE "END:VCARD\n\n";
+				}
+				else
+				{
+						print STDERR "Skipping ill-formatted line:\n";
+						print STDERR "   $_\n";
+				}
+		}
+}
+###
 # parses a pine addressbook file
 ###
 sub parsePine
 {
 		while (<READ>)
 		{
+				# nick\tFull Name\temail@address
+				# nick\tFull Name\t(email@address,email@address)
 				if (m/^(.*)\t(.*)\t(.*\@.*)$/)
 				{
 						my @name = split / /, $2, 2;
@@ -275,7 +315,7 @@ sub formats
 		my $key;
 
 		print "$NAME $VERSION can convert the addressbooks of the following:\n";
-		foreach $key (keys %SUPPORTED)
+		foreach $key (sort(keys %SUPPORTED))
 		{
 				print "\t$key\n";
 		}
@@ -292,7 +332,7 @@ sub usage
 		print "  -f\t\tprint list of supported formats and exit\n";
 		print "  -h\t\tprint this message and exit\n";
 		print "  -i FILE\tread input from FILE\n";
-		print "  -m\t\tconvert from mutt-alias file [default]\n";
+		print "  -m\t\tconvert from mh-alias file\n";
 		print "  -o FILE\twrite output to FILE\n";
 		print "  -p\t\tconvert from pine-addressbook file\n";
 		print "  -v\t\tprint version number and exit\n";

@@ -33,7 +33,7 @@
 			<command>2vcard</command> is a little perl script to convert an
 			addressbook to the popular VCARD file format.  Currently,
 			<command>2vcard</command> can convert
-			<command>mutt</command>'s alias as well as
+			<command>mutt</command>'s and <command>mh</command>'s alias as well as
 			<command>pine</command>'s addressbook format.
         </para>
         <para>
@@ -84,8 +84,8 @@
 			<varlistentry>
 				<term>-m</term>
 				<listitem>
-					<para>Assume input to be in <command>mutt</command>'s
-					alias format. [ DEFAULT ]</para>
+					<para>Assume input to be in <command>mh</command>'s
+					alias format.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
@@ -154,7 +154,8 @@
 		<title>SEE ALSO</title>
 		<para>
 			<command>mutt(1)</command>, <command>pine(1)</command>,
-			<command>gnoemcard(1)</command>, <command>balsa(1)</command>
+			<command>gnoemcard(1)</command>, <command>balsa(1)</command>,
+			<command>nmh(1)</command>, <command>exmh(1)</command>
 		</para>
 		<para>
 			<ulink url="http://www.netmeister.org/apps/2vcard/">The 2vcard

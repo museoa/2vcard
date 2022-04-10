@@ -1,3 +1,9 @@
+2vcard (0.2-1) stable; urgency=low
+
+  * Initial Release of version 0.2
+ 
+ -- Jan Schaumann <jschauma@www.netmeister.org>  Mon, 24 Sep 2001 14:09:28 -0400
+
 2vcard (0.1-1) unstable; urgency=low
 
   * Initial release.
